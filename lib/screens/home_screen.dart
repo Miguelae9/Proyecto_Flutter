@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_control/router/app_routes.dart';
 import 'package:habit_control/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,8 +19,49 @@ class MyApp extends StatelessWidget {
 }
 
 // Pantalla principal de la aplicación
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _userCtrl = TextEditingController();
+  final TextEditingController _passCtrl = TextEditingController();
+
+  String _toEmail(String username) {
+    final u = username.trim();
+    if (u.contains('@')) return u;
+    if (u.toLowerCase() == 'usuario') return 'usuario@profe.local';
+    return '$u@profe.local';
+  }
+
+  Future<void> _login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _toEmail(_userCtrl.text),
+        password: _passCtrl.text,
+      );
+
+      if (!mounted) {
+        return;
+      }
+      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+    } on FirebaseAuthException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Credenciales incorrectas')));
+    }
+  }
+
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +126,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 TextField(
+                  controller: _userCtrl,
                   obscureText: false,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 14,
@@ -128,6 +171,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 TextField(
+                  controller: _passCtrl,
                   obscureText: true,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 14,
@@ -164,11 +208,8 @@ class HomeScreen extends StatelessWidget {
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.dashboard,
-                      ); // Navegar a la pantalla de créditos
+                    onPressed: () async {
+                      await _login();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_control/router/app_routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LateralMenu extends StatelessWidget {
   const LateralMenu({super.key});
@@ -28,7 +29,11 @@ class LateralMenu extends StatelessWidget {
     final currentRoute = ModalRoute.of(context)?.settings.name;
 
     // Crea un botón del menú (reutilizable).
-    Widget item({required String label, required String routeName}) {
+    Widget item({
+      required String label,
+      required String routeName,
+      VoidCallback? onTap,
+    }) {
       final selected = currentRoute == routeName;
       final color = selected ? accent : textMuted;
 
@@ -42,13 +47,15 @@ class LateralMenu extends StatelessWidget {
           ),
         ),
         child: InkWell(
-          onTap: () {
-            Navigator.of(context).pop(); // Cierra el drawer
-            Navigator.pushReplacementNamed(
-              context,
-              routeName,
-            ); // Cambia pantalla
-          },
+          onTap:
+              onTap ??
+              () {
+                Navigator.of(context).pop(); // Cierra el drawer
+                Navigator.pushReplacementNamed(
+                  context,
+                  routeName,
+                ); // Cambia pantalla
+              },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
@@ -120,12 +127,26 @@ class LateralMenu extends StatelessWidget {
             // ITEMS
             item(label: 'DASHBOARD', routeName: AppRoutes.dashboard),
             item(label: 'INPUT LOG', routeName: AppRoutes.inputLog),
-            //item(label: 'ANALYTICS', routeName: AppRoutes.analytics),
+            item(label: 'ANALYTICS', routeName: AppRoutes.analytics),
             item(label: 'ABOUT', routeName: AppRoutes.credits),
 
             const Spacer(),
 
-            item(label: 'LOG OUT', routeName: AppRoutes.home),
+            item(
+              label: 'LOG OUT',
+              routeName: AppRoutes.home,
+              onTap: () async {
+                Navigator.of(context).pop();
+                await FirebaseAuth.instance.signOut();
+
+                if (!context.mounted) return;
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.home,
+                  (route) => false,
+                );
+              },
+            ),
           ],
         ),
       ),

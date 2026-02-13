@@ -41,9 +41,9 @@ dependencies:
   provider: ^6.1.1            # Gestión de estado (MVVM)
 
   # --- Backend & Datos ---
-  firebase_core: ^2.24.2      # Núcleo de Firebase
-  firebase_auth: ^4.16.0      # Login
-  cloud_firestore: ^4.14.0    # Base de datos Nube
+  firebase_core: ^4.4.0      # Núcleo de Firebase
+  firebase_auth: ^6.1.4      # Login
+  cloud_firestore: ^6.1.2    # Base de datos Nube
   shared_preferences: ^2.2.2  # Base de datos Local
   http: ^1.2.0                # Para la API del Clima
   intl: ^0.19.0               # Formateo de fechas

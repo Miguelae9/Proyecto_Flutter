@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "835153358774",
+    "project_id": "habit-control-58eb0",
+    "storage_bucket": "habit-control-58eb0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:835153358774:android:ad3ae8f64eaf4e45f05b17",
+        "android_client_info": {
+          "package_name": "com.example.proyecto_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu2WCuXgh9o89yVAodD_ZFMy6PM3h1WfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
