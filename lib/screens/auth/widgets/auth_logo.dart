@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:habit_control/shared/widgets/app_logo.dart';
 
 class AuthLogo extends StatelessWidget {
   const AuthLogo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Image.asset(
-        'assets/imgs/habit_control_logo.png',
-        width: 130,
-        height: 130,
-      ),
-    );
+    return const AppLogo(size: 130);
   }
 }

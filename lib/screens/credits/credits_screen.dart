@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habit_control/shared/widgets/lateral_menu.dart';
+import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 
 class CreditsScreen extends StatelessWidget {
   const CreditsScreen({super.key});

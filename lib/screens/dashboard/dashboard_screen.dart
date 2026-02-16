@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
-import 'package:habit_control/shared/widgets/lateral_menu.dart';
+import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 
 import 'package:habit_control/screens/dashboard/models/habit.dart';
 import 'package:habit_control/screens/dashboard/widgets/habit_tile.dart';
-import 'package:habit_control/screens/dashboard/widgets/online_badge.dart';
+import 'package:habit_control/shared/widgets/online_badge.dart';
 import 'package:habit_control/screens/dashboard/widgets/weather_card.dart';
 
 class DashboardScreen extends StatefulWidget {

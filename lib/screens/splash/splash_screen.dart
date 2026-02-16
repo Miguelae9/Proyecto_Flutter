@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 import 'package:habit_control/firebase_options.dart';
 import 'package:habit_control/router/app_routes.dart';
+import 'package:habit_control/shared/widgets/app_logo.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  SplashScreenState createState() => SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -34,22 +36,16 @@ class SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B0F14),
+    return const Scaffold(
+      backgroundColor: Color(0xFF0B0F14),
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  'assets/imgs/habit_control_logo.png',
-                  width: 300,
-                ),
-              ),
-              const SizedBox(height: 50),
-              const Text(
+            children: <Widget>[
+              AppLogo(size: 300),
+              SizedBox(height: 50),
+              Text(
                 'HABIT\nCONTROL',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -58,10 +54,10 @@ class SplashScreenState extends State<SplashScreen> {
                   color: Color(0xFFE5E7EB),
                 ),
               ),
-              const SizedBox(height: 50),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 50),
-              const Text(
+              SizedBox(height: 50),
+              CircularProgressIndicator(),
+              SizedBox(height: 50),
+              Text(
                 'v0.1.0 [MVP_BUILD]',
                 textAlign: TextAlign.center,
                 style: TextStyle(

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:habit_control/shared/widgets/lateral_menu.dart';
+import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
+
+import 'package:habit_control/shared/widgets/online_badge.dart';
+import 'package:habit_control/screens/input_log/widgets/metric_row.dart';
 
 class InputLogScreen extends StatefulWidget {
   const InputLogScreen({super.key});
 
   @override
-  State<InputLogScreen> createState() {
-    return _InputLogScreenState();
-  }
+  State<InputLogScreen> createState() => _InputLogScreenState();
 }
 
 class _InputLogScreenState extends State<InputLogScreen> {
@@ -15,7 +16,6 @@ class _InputLogScreenState extends State<InputLogScreen> {
   int _energy = 85;
   double _socialHours = 4.5;
 
-  // TODO: persistencia (SharedPreferences/DB)
   String _formatHours(double value) {
     final int h = value.floor();
     final int m = ((value - h) * 60).round();
@@ -101,9 +101,7 @@ class _InputLogScreenState extends State<InputLogScreen> {
                       OnlineBadge(textColor: textMain),
                     ],
                   ),
-
                   const SizedBox(height: 26),
-
                   Text(
                     'DAILY METRICS',
                     textAlign: TextAlign.center,
@@ -137,55 +135,37 @@ class _InputLogScreenState extends State<InputLogScreen> {
                           color: textMuted,
                         ),
                   ),
-
                   const SizedBox(height: 28),
-
                   MetricRow(
                     label: '> SLEEP HOURS',
                     value: _formatHours(_sleepHours),
-                    onMinus: () {
-                      _changeSleep(false);
-                    },
-                    onPlus: () {
-                      _changeSleep(true);
-                    },
+                    onMinus: () => _changeSleep(false),
+                    onPlus: () => _changeSleep(true),
                     textColor: textMain,
                     valueColor: textMuted,
                     accent: accent,
                   ),
                   const SizedBox(height: 22),
-
                   MetricRow(
                     label: '> ENERGY LEVEL',
                     value: '$_energy%',
-                    onMinus: () {
-                      _changeEnergy(false);
-                    },
-                    onPlus: () {
-                      _changeEnergy(true);
-                    },
+                    onMinus: () => _changeEnergy(false),
+                    onPlus: () => _changeEnergy(true),
                     textColor: textMain,
                     valueColor: textMuted,
                     accent: accent,
                   ),
                   const SizedBox(height: 22),
-
                   MetricRow(
                     label: '> SOCIAL MEDIA TIME',
                     value: _formatHours(_socialHours),
-                    onMinus: () {
-                      _changeSocial(false);
-                    },
-                    onPlus: () {
-                      _changeSocial(true);
-                    },
+                    onMinus: () => _changeSocial(false),
+                    onPlus: () => _changeSocial(true),
                     textColor: textMain,
                     valueColor: textMuted,
                     accent: accent,
                   ),
-
                   const SizedBox(height: 40),
-
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
@@ -208,148 +188,11 @@ class _InputLogScreenState extends State<InputLogScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/* ------------------ WIDGETS AUXILIARES ------------------ */
-
-class OnlineBadge extends StatelessWidget {
-  final Color textColor;
-
-  const OnlineBadge({super.key, required this.textColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        const Dot(color: Color(0xFF22C55E)),
-        const SizedBox(width: 6),
-        Text(
-          'ONLINE',
-          style: TextStyle(color: textColor, fontSize: 11, letterSpacing: 1.6),
-        ),
-      ],
-    );
-  }
-}
-
-class Dot extends StatelessWidget {
-  final Color color;
-
-  const Dot({super.key, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 7,
-      height: 7,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-}
-
-class MetricRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final VoidCallback onMinus;
-  final VoidCallback onPlus;
-
-  final Color textColor;
-  final Color valueColor;
-  final Color accent;
-
-  const MetricRow({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.onMinus,
-    required this.onPlus,
-    required this.textColor,
-    required this.valueColor,
-    required this.accent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            letterSpacing: 1.8,
-            color: textColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: <Widget>[
-            StepButton(isPlus: false, onTap: onMinus, accent: accent),
-            const SizedBox(width: 18),
-            Expanded(
-              child: Center(
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                    color: valueColor,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 18),
-            StepButton(isPlus: true, onTap: onPlus, accent: accent),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class StepButton extends StatelessWidget {
-  final bool isPlus;
-  final VoidCallback onTap;
-  final Color accent;
-
-  const StepButton({
-    super.key,
-    required this.isPlus,
-    required this.onTap,
-    required this.accent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color border = isPlus ? accent : const Color(0xFF64748B);
-    final Color iconColor = isPlus ? accent : const Color(0xFF9CA3AF);
-
-    return SizedBox(
-      width: 54,
-      height: 54,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          padding: EdgeInsets.zero,
-        ),
-        child: Icon(
-          isPlus ? Icons.add : Icons.remove,
-          color: iconColor,
-          size: 22,
         ),
       ),
     );
