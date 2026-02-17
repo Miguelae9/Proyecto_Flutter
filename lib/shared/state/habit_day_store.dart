@@ -10,6 +10,9 @@ class HabitDayStore extends ChangeNotifier {
     : _auth = auth ?? FirebaseAuth.instance,
       _db = firestore ?? FirebaseFirestore.instance;
 
+  static const _pendingKey = 'habit_pending_days_v1';
+  final Set<String> _pendingDays = <String>{};
+
   final FirebaseAuth _auth;
   final FirebaseFirestore _db;
 
@@ -21,6 +24,11 @@ class HabitDayStore extends ChangeNotifier {
   bool get loadedLocal => _loadedLocal;
 
   Set<String> doneForDay(String dayKey) => _doneByDay[dayKey] ?? <String>{};
+
+  Future<void> _savePending() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingKey, jsonEncode(_pendingDays.toList()));
+  }
 
   Future<void> loadLocal() async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,6 +44,15 @@ class HabitDayStore extends ChangeNotifier {
           }),
         );
     }
+
+    final pendingRaw = prefs.getString(_pendingKey);
+    if (pendingRaw != null && pendingRaw.isNotEmpty) {
+      final List<dynamic> decodedPending = jsonDecode(pendingRaw);
+      _pendingDays
+        ..clear()
+        ..addAll(decodedPending.cast<String>());
+    }
+
     _loadedLocal = true;
     notifyListeners();
   }
@@ -81,27 +98,61 @@ class HabitDayStore extends ChangeNotifier {
       set.add(habitId);
     }
 
-    notifyListeners(); // UI instantánea
-    await _saveLocal(); // persistencia local
+    notifyListeners();
+    await _saveLocal();
 
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
     try {
-      final ref = _db
-          .collection('users')
-          .doc(uid)
-          .collection('days')
-          .doc(dayKey);
-      await ref.set({
-        'doneHabitIds': set.toList(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _db.collection('users').doc(uid).collection('days').doc(dayKey).set(
+        {
+          'doneHabitIds': set.toList(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
+      _pendingDays.remove(dayKey);
+      await _savePending();
     } on FirebaseException catch (e) {
       debugPrint('Firestore toggle save failed: ${e.code}');
-      // No crashear: local ya está guardado.
+      _pendingDays.add(dayKey);
+      await _savePending();
     } catch (e) {
       debugPrint('toggle save failed: $e');
+      _pendingDays.add(dayKey);
+      await _savePending();
+    }
+  }
+
+  Future<void> trySyncPending() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    if (_pendingDays.isEmpty) return;
+
+    final List<String> days = _pendingDays.toList();
+
+    for (final dayKey in days) {
+      final set = _doneByDay[dayKey] ?? <String>{};
+      try {
+        await _db
+            .collection('users')
+            .doc(uid)
+            .collection('days')
+            .doc(dayKey)
+            .set({
+              'doneHabitIds': set.toList(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+
+        _pendingDays.remove(dayKey);
+        await _savePending();
+      } on FirebaseException catch (e) {
+        debugPrint('trySyncPending habits failed: ${e.code}');
+      } catch (e) {
+        debugPrint('trySyncPending habits failed: $e');
+      }
     }
   }
 

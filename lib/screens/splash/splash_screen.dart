@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:habit_control/router/app_routes.dart';
+import 'package:habit_control/shared/state/daily_metrics_store.dart';
+
+import 'package:habit_control/shared/state/habit_day_store.dart';
 import 'package:habit_control/shared/widgets/app_logo.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,9 +23,18 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _init() async {
+    final habitStore = context.read<HabitDayStore>();
+    final metricsStore = context.read<DailyMetricsStore>();
+
     await Future.delayed(const Duration(seconds: 2));
 
     final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      await habitStore.trySyncPending();
+      await metricsStore.trySyncPending();
+    }
+
     final nextRoute = (user == null) ? AppRoutes.home : AppRoutes.dashboard;
 
     if (!mounted) return;

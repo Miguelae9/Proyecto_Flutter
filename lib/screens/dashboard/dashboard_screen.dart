@@ -75,16 +75,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return tiles;
   }
 
+  void _afterFirstFrame(Duration _) {
+    final HabitDayStore store = context.read<HabitDayStore>();
+    final String today = dayKeyFromDate(DateTime.now());
+
+    store.trySyncPending();
+    store.syncDayFromCloud(today);
+  }
+
   @override
   void initState() {
     super.initState();
 
-    final store = context.read<HabitDayStore>();
-    final today = dayKeyFromDate(DateTime.now());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      store.syncDayFromCloud(today);
-    });
+    WidgetsBinding.instance.addPostFrameCallback(_afterFirstFrame);
   }
 
   @override
