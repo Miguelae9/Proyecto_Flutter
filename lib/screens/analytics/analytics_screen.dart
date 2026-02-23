@@ -4,8 +4,122 @@ import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 import 'widgets/stat_card.dart';
 import 'widgets/weekly_bar_chart.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+import 'package:provider/provider.dart';
+import 'package:habit_control/shared/state/habit_day_store.dart';
+import 'package:habit_control/shared/utils/day_key.dart';
+
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
+
+  @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  static const int _totalHabits = 6;
+
+  DateTime _startOfWeek(DateTime d) {
+    final date = DateTime(d.year, d.month, d.day);
+    final delta = date.weekday - DateTime.monday;
+    return date.subtract(Duration(days: delta));
+  }
+
+  List<String> _weekKeys(DateTime now) {
+    final start = _startOfWeek(now);
+
+    final List<String> keys = <String>[];
+    for (int i = 0; i < 7; i++) {
+      final DateTime day = start.add(Duration(days: i));
+      keys.add(dayKeyFromDate(day));
+    }
+    return keys;
+  }
+
+  Future<void> _syncWeekIfPossible() async {
+    final HabitDayStore store = context.read<HabitDayStore>();
+    await store.trySyncPending();
+
+    final List<String> keys = _weekKeys(DateTime.now());
+    for (final String k in keys) {
+      await store.syncDayFromCloud(k);
+    }
+  }
+
+  void _afterFirstFrame(Duration _) {
+    _syncWeekIfPossible();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(_afterFirstFrame);
+  }
+
+  List<int> _computeDoneCounts(HabitDayStore store, List<String> keys) {
+    final List<int> counts = <int>[];
+    for (int i = 0; i < keys.length; i++) {
+      final String dayKey = keys[i];
+      final int done = store.doneForDay(dayKey).length;
+      counts.add(done);
+    }
+    return counts;
+  }
+
+  List<double> _computeWeeklyData(List<int> doneCounts) {
+    final List<double> data = <double>[];
+    for (int i = 0; i < doneCounts.length; i++) {
+      final int c = doneCounts[i];
+      double ratio = 0.0;
+      if (_totalHabits != 0) {
+        ratio = c / _totalHabits;
+      }
+      data.add(ratio);
+    }
+    return data;
+  }
+
+  int _computeConsistencyPct(List<double> weeklyData) {
+    if (weeklyData.isEmpty) return 0;
+
+    double sum = 0.0;
+    for (int i = 0; i < weeklyData.length; i++) {
+      sum += weeklyData[i];
+    }
+    final double avg = sum / weeklyData.length;
+    return (avg * 100).round();
+  }
+
+  int _computeStreak(List<String> keys, List<int> doneCounts) {
+    int streak = 0;
+
+    final String todayKey = dayKeyFromDate(DateTime.now());
+    final int todayIndex = keys.indexOf(todayKey);
+
+    if (todayIndex == -1) return 0;
+
+    for (int i = todayIndex; i >= 0; i--) {
+      if (doneCounts[i] > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  }
+
+  Widget _buildMenuButton(Color textMain) {
+    return Builder(
+      builder: (BuildContext ctx) {
+        return IconButton(
+          icon: Icon(Icons.menu, color: textMain),
+          onPressed: () {
+            Scaffold.of(ctx).openDrawer();
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,16 +130,15 @@ class AnalyticsScreen extends StatelessWidget {
     final Color textMuted = theme.textTheme.bodyMedium?.color ?? Colors.grey;
     final Color accent = theme.primaryColor;
 
-    final List<double> weeklyData = <double>[
-      0.80,
-      0.50,
-      0.32,
-      0.60,
-      0.53,
-      0.73,
-      0.45,
-    ];
     final List<String> days = <String>['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+    final HabitDayStore store = context.watch<HabitDayStore>();
+    final List<String> keys = _weekKeys(DateTime.now());
+
+    final List<int> doneCounts = _computeDoneCounts(store, keys);
+    final List<double> weeklyData = _computeWeeklyData(doneCounts);
+    final int consistencyPct = _computeConsistencyPct(weeklyData);
+    final int streak = _computeStreak(keys, doneCounts);
 
     return Scaffold(
       backgroundColor: bg,
@@ -41,16 +154,7 @@ class AnalyticsScreen extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Builder(
-                        builder: (BuildContext ctx) {
-                          return IconButton(
-                            icon: Icon(Icons.menu, color: textMain),
-                            onPressed: () {
-                              Scaffold.of(ctx).openDrawer();
-                            },
-                          );
-                        },
-                      ),
+                      _buildMenuButton(textMain),
                       const Spacer(),
                       Text(
                         'WEEKLY PERFORMANCE',
@@ -81,7 +185,7 @@ class AnalyticsScreen extends StatelessWidget {
                       Expanded(
                         child: StatCard(
                           title: 'CONSISTENCY',
-                          value: '85%',
+                          value: '$consistencyPct%',
                           showUpArrow: true,
                           textMain: textMain,
                           borderColor: textMuted.withValues(alpha: 0.35),
@@ -92,7 +196,7 @@ class AnalyticsScreen extends StatelessWidget {
                       Expanded(
                         child: StatCard(
                           title: 'CURRENT STREAK',
-                          value: '12 DAYS',
+                          value: '$streak DAYS',
                           showUpArrow: false,
                           textMain: textMain,
                           borderColor: textMuted.withValues(alpha: 0.5),
