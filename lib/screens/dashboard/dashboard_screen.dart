@@ -8,6 +8,10 @@ import 'package:habit_control/screens/dashboard/widgets/habit_tile.dart';
 import 'package:habit_control/shared/widgets/online_badge.dart';
 import 'package:habit_control/screens/dashboard/widgets/weather_card.dart';
 
+import 'package:provider/provider.dart';
+import 'package:habit_control/shared/state/habit_day_store.dart';
+import 'package:habit_control/shared/utils/day_key.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -18,14 +22,21 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // TODO: conectar a datos reales
   final List<Habit> _habits = <Habit>[
-    Habit(title: 'GYM', streakText: 'STREAK: 4 DAYS', active: false),
-    Habit(title: 'READING', streakText: 'STREAK: 15 DAYS', active: false),
-    Habit(title: 'MEDITATION', streakText: 'STREAK: 2 DAYS', active: false),
-    Habit(title: 'SLEEP 8\nHOURS', streakText: 'STREAK: 5 DAYS', active: false),
-    Habit(title: 'WATER', streakText: 'STREAK: 3 DAYS', active: false),
-    Habit(title: 'RUNNING', streakText: 'STREAK: 1 DAY', active: false),
+    const Habit(id: 'gym', title: 'GYM', streakText: 'STREAK: 4 DAYS'),
+    const Habit(id: 'reading', title: 'READING', streakText: 'STREAK: 15 DAYS'),
+    const Habit(
+      id: 'meditation',
+      title: 'MEDITATION',
+      streakText: 'STREAK: 2 DAYS',
+    ),
+    const Habit(
+      id: 'sleep_8h',
+      title: 'SLEEP 8\nHOURS',
+      streakText: 'STREAK: 5 DAYS',
+    ),
+    const Habit(id: 'water', title: 'WATER', streakText: 'STREAK: 3 DAYS'),
+    const Habit(id: 'running', title: 'RUNNING', streakText: 'STREAK: 1 DAY'),
   ];
 
   void _openDrawer() {
@@ -35,52 +46,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _toggleHabit(int index) {
-    setState(() {
-      _habits[index].active = !_habits[index].active;
-    });
-  }
+  List<Widget> _buildHabitTiles(String todayKey) {
+    final store = context.watch<HabitDayStore>();
+    final doneIds = store.doneForDay(todayKey);
 
-  int _countCompleted() {
-    int completed = 0;
-    for (int i = 0; i < _habits.length; i++) {
-      if (_habits[i].active) {
-        completed++;
-      }
-    }
-    return completed;
-  }
-
-  double _progress() {
-    if (_habits.isEmpty) {
-      return 0.0;
-    }
-    final int completed = _countCompleted();
-    return completed / _habits.length;
-  }
-
-  List<Widget> _buildHabitTiles() {
     final List<Widget> tiles = <Widget>[];
 
     for (int i = 0; i < _habits.length; i++) {
-      final Habit habit = _habits[i];
+      final habit = _habits[i];
+      final isActive = doneIds.contains(habit.id);
 
       tiles.add(
         HabitTile(
           title: habit.title,
           streak: habit.streakText,
-          active: habit.active,
-          accent: habit.active
-              ? const Color(0xFF6CFAFF)
-              : const Color(0xFF93A3B8),
+          active: isActive,
+          accent: isActive ? const Color(0xFF6CFAFF) : const Color(0xFF93A3B8),
           onTap: () {
-            _toggleHabit(i);
+            context.read<HabitDayStore>().toggleHabitForDay(
+              dayKey: todayKey,
+              habitId: habit.id,
+            );
           },
         ),
       );
     }
 
     return tiles;
+  }
+
+  void _afterFirstFrame(Duration _) {
+    final HabitDayStore store = context.read<HabitDayStore>();
+    final String today = dayKeyFromDate(DateTime.now());
+
+    store.trySyncPending();
+    store.syncDayFromCloud(today);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback(_afterFirstFrame);
   }
 
   @override
@@ -93,7 +100,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final Color textMuted =
         theme.textTheme.bodyMedium?.color ?? const Color(0xFF9CA3AF);
 
-    final double progresoDecimal = _progress();
+    final String todayKey = dayKeyFromDate(DateTime.now());
+    final done = context.watch<HabitDayStore>().doneForDay(todayKey).length;
+    final double progresoDecimal = _habits.isEmpty
+        ? 0.0
+        : (done / _habits.length);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -178,7 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 30),
 
-                Column(children: _buildHabitTiles()),
+                Column(children: _buildHabitTiles(todayKey)),
               ],
             ),
           ),

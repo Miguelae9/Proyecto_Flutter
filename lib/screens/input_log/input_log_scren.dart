@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
+import 'package:provider/provider.dart';
 
+import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 import 'package:habit_control/shared/widgets/online_badge.dart';
+
+import 'package:habit_control/shared/state/daily_metrics_store.dart';
+import 'package:habit_control/shared/utils/day_key.dart';
+import 'package:habit_control/screens/input_log/models/daily_metrics.dart';
 import 'package:habit_control/screens/input_log/widgets/metric_row.dart';
 
 class InputLogScreen extends StatefulWidget {
@@ -12,56 +17,92 @@ class InputLogScreen extends StatefulWidget {
 }
 
 class _InputLogScreenState extends State<InputLogScreen> {
-  double _sleepHours = 7.5;
-  int _energy = 85;
-  double _socialHours = 4.5;
+  late String _todayKey;
 
-  String _formatHours(double value) {
-    final int h = value.floor();
-    final int m = ((value - h) * 60).round();
-    return '${h}h ${m}m';
+  double _sleepHours = 0.0;
+  int _energy = 0;
+  double _socialHours = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _todayKey = dayKeyFromDate(DateTime.now());
+
+    final DailyMetricsStore store = context.read<DailyMetricsStore>();
+    final DailyMetrics initial = store.metricsForDay(_todayKey);
+
+    _sleepHours = initial.sleepHours;
+    _energy = initial.energy;
+    _socialHours = initial.socialHours;
+
+    WidgetsBinding.instance.addPostFrameCallback(_afterFirstFrame);
   }
 
-  void _changeSleep(bool plus) {
+  void _afterFirstFrame(Duration _) async {
+    final DailyMetricsStore store = context.read<DailyMetricsStore>();
+    await store.syncDayFromCloud(_todayKey);
+
+    final DailyMetrics fresh = store.metricsForDay(_todayKey);
+    if (!mounted) return;
+
     setState(() {
-      final double next = plus ? _sleepHours + 0.5 : _sleepHours - 0.5;
-      if (next < 0) _sleepHours = 0;
-      if (next > 24) _sleepHours = 24;
-      if (next >= 0 && next <= 24) _sleepHours = next;
+      _sleepHours = fresh.sleepHours;
+      _energy = fresh.energy;
+      _socialHours = fresh.socialHours;
     });
   }
 
-  void _changeEnergy(bool plus) {
-    setState(() {
-      final int next = plus ? _energy + 5 : _energy - 5;
-      if (next < 0) _energy = 0;
-      if (next > 100) _energy = 100;
-      if (next >= 0 && next <= 100) _energy = next;
-    });
-  }
-
-  void _changeSocial(bool plus) {
-    setState(() {
-      final double next = plus ? _socialHours + 0.25 : _socialHours - 0.25;
-      if (next < 0) {
-        _socialHours = 0;
-      } else {
-        _socialHours = next;
-      }
-    });
-  }
-
-  void _saveRecord() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'RECORD SAVED SUCCESSFULLY',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        duration: const Duration(seconds: 2),
-      ),
+  void _persistNow() {
+    final DailyMetricsStore store = context.read<DailyMetricsStore>();
+    final DailyMetrics value = DailyMetrics(
+      sleepHours: _sleepHours,
+      energy: _energy,
+      socialHours: _socialHours,
     );
+    store.setMetrics(_todayKey, value);
+  }
+
+  void _sleepMinus() {
+    setState(() {
+      _sleepHours = (_sleepHours - 0.5).clamp(0.0, 12.0);
+    });
+    _persistNow();
+  }
+
+  void _sleepPlus() {
+    setState(() {
+      _sleepHours = (_sleepHours + 0.5).clamp(0.0, 12.0);
+    });
+    _persistNow();
+  }
+
+  void _energyMinus() {
+    setState(() {
+      _energy = (_energy - 1).clamp(0, 10);
+    });
+    _persistNow();
+  }
+
+  void _energyPlus() {
+    setState(() {
+      _energy = (_energy + 1).clamp(0, 10);
+    });
+    _persistNow();
+  }
+
+  void _socialMinus() {
+    setState(() {
+      _socialHours = (_socialHours - 0.5).clamp(0.0, 10.0);
+    });
+    _persistNow();
+  }
+
+  void _socialPlus() {
+    setState(() {
+      _socialHours = (_socialHours + 0.5).clamp(0.0, 10.0);
+    });
+    _persistNow();
   }
 
   @override
@@ -136,59 +177,40 @@ class _InputLogScreenState extends State<InputLogScreen> {
                         ),
                   ),
                   const SizedBox(height: 28),
+
                   MetricRow(
-                    label: '> SLEEP HOURS',
-                    value: _formatHours(_sleepHours),
-                    onMinus: () => _changeSleep(false),
-                    onPlus: () => _changeSleep(true),
-                    textColor: textMain,
-                    valueColor: textMuted,
+                    label: 'SLEEP HOURS',
+                    value: _sleepHours.toStringAsFixed(1),
+                    onMinus: _sleepMinus,
+                    onPlus: _sleepPlus,
+                    textColor: textMuted,
+                    valueColor: textMain,
                     accent: accent,
                   ),
-                  const SizedBox(height: 22),
+
+                  const SizedBox(height: 28),
+
                   MetricRow(
-                    label: '> ENERGY LEVEL',
-                    value: '$_energy%',
-                    onMinus: () => _changeEnergy(false),
-                    onPlus: () => _changeEnergy(true),
-                    textColor: textMain,
-                    valueColor: textMuted,
+                    label: 'ENERGY (0-10)',
+                    value: '$_energy',
+                    onMinus: _energyMinus,
+                    onPlus: _energyPlus,
+                    textColor: textMuted,
+                    valueColor: textMain,
                     accent: accent,
                   ),
-                  const SizedBox(height: 22),
+
+                  const SizedBox(height: 28),
+
                   MetricRow(
-                    label: '> SOCIAL MEDIA TIME',
-                    value: _formatHours(_socialHours),
-                    onMinus: () => _changeSocial(false),
-                    onPlus: () => _changeSocial(true),
-                    textColor: textMain,
-                    valueColor: textMuted,
+                    label: 'SOCIAL HOURS',
+                    value: _socialHours.toStringAsFixed(1),
+                    onMinus: _socialMinus,
+                    onPlus: _socialPlus,
+                    textColor: textMuted,
+                    valueColor: textMain,
                     accent: accent,
                   ),
-                  const SizedBox(height: 40),
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _saveRecord,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accent,
-                        foregroundColor: bg,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: const Text(
-                        'SAVE RECORD',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.4,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),

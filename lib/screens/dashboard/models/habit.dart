@@ -1,8 +1,11 @@
 class Habit {
+  final String id;
   final String title;
   final String streakText;
-  bool active;
 
-  Habit({required this.title, required this.streakText, bool? active})
-    : active = active ?? false;
+  const Habit({
+    required this.id,
+    required this.title,
+    required this.streakText,
+  });
 }
