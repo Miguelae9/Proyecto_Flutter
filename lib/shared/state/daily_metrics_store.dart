@@ -22,9 +22,10 @@ class DailyMetricsStore extends ChangeNotifier {
 
   final Map<String, DailyMetrics> _byDay = {};
 
-  DailyMetrics metricsForDay(String dayKey) =>
-      _byDay[dayKey] ??
-      const DailyMetrics(sleepHours: 0, energy: 0, socialHours: 0);
+  DailyMetrics metricsForDay(String dayKey) {
+    return _byDay[dayKey] ??
+        const DailyMetrics(sleepHours: 0, energy: 0, socialHours: 0);
+  }
 
   Future<void> loadLocal() async {
     final prefs = await SharedPreferences.getInstance();
@@ -35,12 +36,12 @@ class DailyMetricsStore extends ChangeNotifier {
     _byDay
       ..clear()
       ..addAll(
-        decoded.map(
-          (k, v) => MapEntry(
+        decoded.map((k, v) {
+          return MapEntry(
             k,
             DailyMetrics.fromMap((v as Map).cast<String, dynamic>()),
-          ),
-        ),
+          );
+        }),
       );
 
     final pendingRaw = prefs.getString(_pendingKey);
@@ -118,7 +119,9 @@ class DailyMetricsStore extends ChangeNotifier {
 
   Future<void> _saveLocal() async {
     final prefs = await SharedPreferences.getInstance();
-    final map = _byDay.map((k, v) => MapEntry(k, v.toMap()));
+    final map = _byDay.map((k, v) {
+      return MapEntry(k, v.toMap());
+    });
     await prefs.setString(_prefsKey, jsonEncode(map));
   }
 
@@ -149,7 +152,6 @@ class DailyMetricsStore extends ChangeNotifier {
         await _savePending();
       } on FirebaseException catch (e) {
         debugPrint('trySyncPending metrics failed: ${e.code}');
-        // Si sigue fallando, lo dejamos pendiente.
       } catch (e) {
         debugPrint('trySyncPending metrics failed: $e');
       }

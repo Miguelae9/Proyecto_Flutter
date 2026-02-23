@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_control/screens/analytics/analytics_screen.dart';
 import 'package:habit_control/screens/credits/credits_screen.dart';
 import 'package:habit_control/screens/dashboard/dashboard_screen.dart';
-import 'package:habit_control/screens/input_log/input_log_scren.dart';
+import 'package:habit_control/screens/input_log/input_log_screen.dart';
 import 'package:habit_control/screens/splash/splash_screen.dart';
 import 'package:habit_control/screens/auth/home_screen.dart';
 

@@ -20,11 +20,9 @@ class LateralMenu extends StatelessWidget {
     await FirebaseAuth.instance.signOut();
 
     if (!context.mounted) return;
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.home,
-      (route) => false,
-    );
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) {
+      return false;
+    });
   }
 
   @override
@@ -49,44 +47,51 @@ class LateralMenu extends StatelessWidget {
             LateralMenuHeader(textMain: textMain),
             const SizedBox(height: 20),
             Container(height: 1, color: _border),
-
             LateralMenuItem(
               label: 'DASHBOARD',
               selected: currentRoute == AppRoutes.dashboard,
               accent: accent,
               textMuted: textMuted,
-              onTap: () => _navigate(context, AppRoutes.dashboard),
+              onTap: () {
+                _navigate(context, AppRoutes.dashboard);
+              },
             ),
             LateralMenuItem(
               label: 'INPUT LOG',
               selected: currentRoute == AppRoutes.inputLog,
               accent: accent,
               textMuted: textMuted,
-              onTap: () => _navigate(context, AppRoutes.inputLog),
+              onTap: () {
+                _navigate(context, AppRoutes.inputLog);
+              },
             ),
             LateralMenuItem(
               label: 'ANALYTICS',
               selected: currentRoute == AppRoutes.analytics,
               accent: accent,
               textMuted: textMuted,
-              onTap: () => _navigate(context, AppRoutes.analytics),
+              onTap: () {
+                _navigate(context, AppRoutes.analytics);
+              },
             ),
             LateralMenuItem(
               label: 'ABOUT',
               selected: currentRoute == AppRoutes.credits,
               accent: accent,
               textMuted: textMuted,
-              onTap: () => _navigate(context, AppRoutes.credits),
+              onTap: () {
+                _navigate(context, AppRoutes.credits);
+              },
             ),
-
             const Spacer(),
-
             LateralMenuItem(
               label: 'LOG OUT',
               selected: false,
               accent: accent,
               textMuted: textMuted,
-              onTap: () => _logout(context),
+              onTap: () {
+                _logout(context);
+              },
             ),
           ],
         ),

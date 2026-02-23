@@ -9,21 +9,38 @@ class DailyMetrics {
     required this.socialHours,
   });
 
-  Map<String, dynamic> toMap() => {
-    'sleepHours': sleepHours,
-    'energy': energy,
-    'socialHours': socialHours,
-  };
+  Map<String, dynamic> toMap() {
+    return {
+      'sleepHours': sleepHours,
+      'energy': energy,
+      'socialHours': socialHours,
+    };
+  }
 
   static DailyMetrics fromMap(Map<String, dynamic>? map) {
     if (map == null) {
       return const DailyMetrics(sleepHours: 0, energy: 0, socialHours: 0);
     }
 
-    double toDouble(dynamic v) =>
-        (v is int) ? v.toDouble() : (v is double ? v : 0.0);
+    double toDouble(dynamic v) {
+      if (v is int) {
+        return v.toDouble();
+      }
+      if (v is double) {
+        return v;
+      }
+      return 0.0;
+    }
 
-    int toInt(dynamic v) => (v is int) ? v : (v is double ? v.toInt() : 0);
+    int toInt(dynamic v) {
+      if (v is int) {
+        return v;
+      }
+      if (v is double) {
+        return v.toInt();
+      }
+      return 0;
+    }
 
     return DailyMetrics(
       sleepHours: toDouble(map['sleepHours']),

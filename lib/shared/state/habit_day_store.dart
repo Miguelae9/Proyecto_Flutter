@@ -21,9 +21,13 @@ class HabitDayStore extends ChangeNotifier {
   final Map<String, Set<String>> _doneByDay = {};
   bool _loadedLocal = false;
 
-  bool get loadedLocal => _loadedLocal;
+  bool get loadedLocal {
+    return _loadedLocal;
+  }
 
-  Set<String> doneForDay(String dayKey) => _doneByDay[dayKey] ?? <String>{};
+  Set<String> doneForDay(String dayKey) {
+    return _doneByDay[dayKey] ?? <String>{};
+  }
 
   Future<void> _savePending() async {
     final prefs = await SharedPreferences.getInstance();
@@ -58,20 +62,20 @@ class HabitDayStore extends ChangeNotifier {
   }
 
   Future<void> syncDayFromCloud(String dayKey) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
     try {
-      final doc = await FirebaseFirestore.instance
+      final resolved = await _db
           .collection('users')
           .doc(uid)
           .collection('days')
           .doc(dayKey)
           .get();
 
-      if (!doc.exists) return;
+      if (!resolved.exists) return;
 
-      final data = doc.data();
+      final data = resolved.data();
       final list =
           (data?['doneHabitIds'] as List?)?.cast<String>() ?? <String>[];
       _doneByDay[dayKey] = list.toSet();
@@ -80,7 +84,6 @@ class HabitDayStore extends ChangeNotifier {
       await _saveLocal();
     } on FirebaseException catch (e) {
       debugPrint('Firestore syncDayFromCloud failed: ${e.code}');
-      // Nos quedamos con SharedPreferences.
     } catch (e) {
       debugPrint('syncDayFromCloud failed: $e');
     }
@@ -90,7 +93,9 @@ class HabitDayStore extends ChangeNotifier {
     required String dayKey,
     required String habitId,
   }) async {
-    final set = _doneByDay.putIfAbsent(dayKey, () => <String>{});
+    final set = _doneByDay.putIfAbsent(dayKey, () {
+      return <String>{};
+    });
 
     if (set.contains(habitId)) {
       set.remove(habitId);
@@ -158,7 +163,9 @@ class HabitDayStore extends ChangeNotifier {
 
   Future<void> _saveLocal() async {
     final prefs = await SharedPreferences.getInstance();
-    final map = _doneByDay.map((day, ids) => MapEntry(day, ids.toList()));
+    final map = _doneByDay.map((day, ids) {
+      return MapEntry(day, ids.toList());
+    });
     await prefs.setString(_prefsKey, jsonEncode(map));
   }
 
