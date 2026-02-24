@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:habit_control/router/app_routes.dart';
 
 import 'widgets/auth_logo.dart';
+import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_section_label.dart';
 import 'widgets/auth_text_field.dart';
-import 'widgets/auth_primary_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _userCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
 
+  bool _isLoading = false;
+
   String _toEmail(String username) {
     final u = username.trim();
     if (u.contains('@')) return u;
@@ -26,6 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (_isLoading) return;
+
+    setState(_setLoadingTrue);
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _toEmail(_userCtrl.text),
@@ -39,7 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Credenciales incorrectas')));
+    } finally {
+      if (mounted) {
+        setState(_setLoadingFalse);
+      }
     }
+  }
+
+  void _setLoadingTrue() {
+    _isLoading = true;
+  }
+
+  void _setLoadingFalse() {
+    _isLoading = false;
   }
 
   @override
@@ -59,6 +77,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final Color textMuted =
         theme.textTheme.bodyMedium?.color ?? const Color(0xFF9CA3AF);
 
+    final String buttonText = _isLoading ? 'CONNECTING...' : 'CONNECT';
+    final VoidCallback? onPressed = _isLoading ? null : _login;
+
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
@@ -71,7 +92,6 @@ class _LoginScreenState extends State<LoginScreen> {
               children: <Widget>[
                 const Center(child: AuthLogo()),
                 const SizedBox(height: 18),
-
                 Text(
                   'HABIT\nCONTROL',
                   textAlign: TextAlign.center,
@@ -80,7 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-
                 Text(
                   'SYSTEM\nINITIALIZATION',
                   textAlign: TextAlign.center,
@@ -91,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: textMuted,
                   ),
                 ),
-
                 const SizedBox(height: 50),
 
                 const AuthSectionLabel(text: '> IDENTIFIER'),
@@ -114,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
-                AuthPrimaryButton(text: 'CONNECT', onPressed: _login),
+                AuthPrimaryButton(text: buttonText, onPressed: onPressed),
 
                 const SizedBox(height: 40),
 

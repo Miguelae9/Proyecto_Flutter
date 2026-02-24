@@ -47,6 +47,8 @@ class HabitDayStore extends ChangeNotifier {
             return MapEntry(day, ids);
           }),
         );
+    } else {
+      _doneByDay.clear();
     }
 
     final pendingRaw = prefs.getString(_pendingKey);
@@ -55,6 +57,8 @@ class HabitDayStore extends ChangeNotifier {
       _pendingDays
         ..clear()
         ..addAll(decodedPending.cast<String>());
+    } else {
+      _pendingDays.clear();
     }
 
     _loadedLocal = true;
@@ -93,9 +97,7 @@ class HabitDayStore extends ChangeNotifier {
     required String dayKey,
     required String habitId,
   }) async {
-    final set = _doneByDay.putIfAbsent(dayKey, () {
-      return <String>{};
-    });
+    final set = _doneByDay.putIfAbsent(dayKey, _newEmptySet);
 
     if (set.contains(habitId)) {
       set.remove(habitId);
@@ -129,6 +131,10 @@ class HabitDayStore extends ChangeNotifier {
       _pendingDays.add(dayKey);
       await _savePending();
     }
+  }
+
+  Set<String> _newEmptySet() {
+    return <String>{};
   }
 
   Future<void> trySyncPending() async {
@@ -169,11 +175,15 @@ class HabitDayStore extends ChangeNotifier {
     await prefs.setString(_prefsKey, jsonEncode(map));
   }
 
-  Future<void> clearLocal() async {
+  Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefsKey);
+    await prefs.remove(_pendingKey);
+
     _doneByDay.clear();
+    _pendingDays.clear();
     _loadedLocal = false;
+
     notifyListeners();
   }
 }

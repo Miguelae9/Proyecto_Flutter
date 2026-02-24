@@ -29,21 +29,24 @@ class DailyMetricsStore extends ChangeNotifier {
 
   Future<void> loadLocal() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // 1) Cargar métricas si existen
     final raw = prefs.getString(_prefsKey);
-    if (raw == null || raw.isEmpty) return;
+    if (raw != null && raw.isNotEmpty) {
+      final Map<String, dynamic> decoded = jsonDecode(raw);
+      _byDay
+        ..clear()
+        ..addAll(
+          decoded.map((k, v) {
+            return MapEntry(
+              k,
+              DailyMetrics.fromMap((v as Map).cast<String, dynamic>()),
+            );
+          }),
+        );
+    }
 
-    final Map<String, dynamic> decoded = jsonDecode(raw);
-    _byDay
-      ..clear()
-      ..addAll(
-        decoded.map((k, v) {
-          return MapEntry(
-            k,
-            DailyMetrics.fromMap((v as Map).cast<String, dynamic>()),
-          );
-        }),
-      );
-
+    // 2) Cargar pending SIEMPRE, haya métricas o no
     final pendingRaw = prefs.getString(_pendingKey);
     if (pendingRaw != null && pendingRaw.isNotEmpty) {
       final List<dynamic> decodedPending = jsonDecode(pendingRaw);
@@ -75,10 +78,7 @@ class DailyMetricsStore extends ChangeNotifier {
           .doc(uid)
           .collection('metrics')
           .doc(dayKey)
-          .set({
-            ...value.toMap(),
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+          .set(_withUpdatedAt(value), SetOptions(merge: true));
 
       _pendingDays.remove(dayKey);
       await _savePending();
@@ -91,6 +91,12 @@ class DailyMetricsStore extends ChangeNotifier {
       _pendingDays.add(dayKey);
       await _savePending();
     }
+  }
+
+  Map<String, dynamic> _withUpdatedAt(DailyMetrics value) {
+    final map = value.toMap();
+    map['updatedAt'] = FieldValue.serverTimestamp();
+    return map;
   }
 
   Future<void> syncDayFromCloud(String dayKey) async {
@@ -143,10 +149,7 @@ class DailyMetricsStore extends ChangeNotifier {
             .doc(uid)
             .collection('metrics')
             .doc(dayKey)
-            .set({
-              ...value.toMap(),
-              'updatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+            .set(_withUpdatedAt(value), SetOptions(merge: true));
 
         _pendingDays.remove(dayKey);
         await _savePending();
@@ -156,5 +159,16 @@ class DailyMetricsStore extends ChangeNotifier {
         debugPrint('trySyncPending metrics failed: $e');
       }
     }
+  }
+
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefsKey);
+    await prefs.remove(_pendingKey);
+
+    _byDay.clear();
+    _pendingDays.clear();
+
+    notifyListeners();
   }
 }

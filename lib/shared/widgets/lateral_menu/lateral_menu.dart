@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
 import 'package:habit_control/router/app_routes.dart';
+import 'package:habit_control/shared/state/habit_day_store.dart';
+import 'package:habit_control/shared/state/daily_metrics_store.dart';
 
 import 'lateral_menu_header.dart';
 import 'lateral_menu_item.dart';
@@ -8,22 +12,11 @@ import 'lateral_menu_item.dart';
 class LateralMenu extends StatelessWidget {
   const LateralMenu({super.key});
 
+  static bool _removeAll(Route<dynamic> route) {
+    return false;
+  }
+
   static const Color _border = Color(0xFF1F2A37);
-
-  void _navigate(BuildContext context, String routeName) {
-    Navigator.of(context).pop();
-    Navigator.pushReplacementNamed(context, routeName);
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    Navigator.of(context).pop();
-    await FirebaseAuth.instance.signOut();
-
-    if (!context.mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) {
-      return false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,55 +40,67 @@ class LateralMenu extends StatelessWidget {
             LateralMenuHeader(textMain: textMain),
             const SizedBox(height: 20),
             Container(height: 1, color: _border),
+
             LateralMenuItem(
               label: 'DASHBOARD',
               selected: currentRoute == AppRoutes.dashboard,
               accent: accent,
               textMuted: textMuted,
-              onTap: () {
-                _navigate(context, AppRoutes.dashboard);
-              },
+              routeName: AppRoutes.dashboard,
+              replace: true,
             ),
             LateralMenuItem(
               label: 'INPUT LOG',
               selected: currentRoute == AppRoutes.inputLog,
               accent: accent,
               textMuted: textMuted,
-              onTap: () {
-                _navigate(context, AppRoutes.inputLog);
-              },
+              routeName: AppRoutes.inputLog,
+              replace: true,
             ),
             LateralMenuItem(
               label: 'ANALYTICS',
               selected: currentRoute == AppRoutes.analytics,
               accent: accent,
               textMuted: textMuted,
-              onTap: () {
-                _navigate(context, AppRoutes.analytics);
-              },
+              routeName: AppRoutes.analytics,
+              replace: true,
             ),
             LateralMenuItem(
               label: 'ABOUT',
               selected: currentRoute == AppRoutes.credits,
               accent: accent,
               textMuted: textMuted,
-              onTap: () {
-                _navigate(context, AppRoutes.credits);
-              },
+              routeName: AppRoutes.credits,
+              replace: true,
             ),
+
             const Spacer(),
+
             LateralMenuItem(
               label: 'LOG OUT',
               selected: false,
               accent: accent,
               textMuted: textMuted,
-              onTap: () {
-                _logout(context);
-              },
+              onTap: _logout,
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    Navigator.of(context).pop();
+
+    final habitStore = context.read<HabitDayStore>();
+    final metricsStore = context.read<DailyMetricsStore>();
+
+    await habitStore.clearAll();
+    await metricsStore.clearAll();
+
+    await FirebaseAuth.instance.signOut();
+
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, _removeAll);
   }
 }
