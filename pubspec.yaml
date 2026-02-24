@@ -45,7 +45,6 @@ dependencies:
   firebase_auth: ^6.1.4      # Login
   cloud_firestore: ^6.1.2    # Base de datos Nube
   shared_preferences: ^2.2.2  # Base de datos Local
-  http: ^1.2.0                # Para la API del Clima
   intl: ^0.19.0               # Formateo de fechas
 
 dev_dependencies:
