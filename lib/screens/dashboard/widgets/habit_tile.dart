@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Tappable habit row with a colored accent bar and completion indicator.
 class HabitTile extends StatelessWidget {
   final String title;
   final String streak;
@@ -7,6 +8,7 @@ class HabitTile extends StatelessWidget {
   final Color accent;
   final VoidCallback onTap;
 
+  /// Creates a habit tile.
   const HabitTile({
     super.key,
     required this.title,

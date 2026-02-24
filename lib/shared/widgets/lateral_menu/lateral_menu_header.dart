@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_control/shared/widgets/app_logo.dart';
 
+/// Header section of the [LateralMenu] drawer.
 class LateralMenuHeader extends StatelessWidget {
   final Color textMain;
 

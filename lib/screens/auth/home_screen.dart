@@ -7,7 +7,15 @@ import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_section_label.dart';
 import 'widgets/auth_text_field.dart';
 
+/// Login screen backed by Firebase Auth email/password sign-in.
+///
+/// Visible behavior:
+/// - Converts the entered identifier into an email via [_toEmail]
+/// - Calls [FirebaseAuth.signInWithEmailAndPassword]
+/// - On success, navigates to [AppRoutes.dashboard]
+/// - On [FirebaseAuthException], shows a [SnackBar]
 class LoginScreen extends StatefulWidget {
+  /// Creates the login screen.
   const LoginScreen({super.key});
 
   @override
@@ -20,6 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
 
+  /// Converts a user-entered identifier into an email address.
+  ///
+  /// Needs clarification from author: The `@profe.local` domain and the special
+  /// `usuario` mapping appear to be environment-specific, but no context is
+  /// provided in this file.
   String _toEmail(String username) {
     final u = username.trim();
     if (u.contains('@')) return u;

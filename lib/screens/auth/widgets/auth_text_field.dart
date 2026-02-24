@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Styled text field used on the authentication screen.
 class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
@@ -27,7 +28,10 @@ class AuthTextField extends StatelessWidget {
         hintText: hintText,
         hintStyle: theme.inputDecorationTheme.hintStyle,
         fillColor: theme.inputDecorationTheme.fillColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
           borderSide: BorderSide(color: theme.dividerColor, width: 1),

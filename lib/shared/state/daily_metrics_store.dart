@@ -7,10 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:habit_control/screens/input_log/models/daily_metrics.dart';
 
+/// Stores per-day "daily metrics" and synchronizes them with Firestore.
+///
+/// Visible persistence:
+/// - Local cache in [SharedPreferences] under [_prefsKey]
+/// - Pending day keys under [_pendingKey] (used for best-effort retry sync)
+///
+/// Visible Firestore paths:
+/// - `users/{uid}/metrics/{dayKey}`
 class DailyMetricsStore extends ChangeNotifier {
   static const _pendingKey = 'daily_metrics_pending_days_v1';
   final Set<String> _pendingDays = <String>{};
 
+  /// Creates the store.
+  ///
+  /// Optional [auth] and [firestore] parameters are used for dependency
+  /// injection in tests or previews.
   DailyMetricsStore({FirebaseAuth? auth, FirebaseFirestore? firestore})
     : _auth = auth ?? FirebaseAuth.instance,
       _db = firestore ?? FirebaseFirestore.instance;
@@ -22,15 +34,17 @@ class DailyMetricsStore extends ChangeNotifier {
 
   final Map<String, DailyMetrics> _byDay = {};
 
+  /// Returns stored metrics for [dayKey] or a zero-value default.
   DailyMetrics metricsForDay(String dayKey) {
     return _byDay[dayKey] ??
         const DailyMetrics(sleepHours: 0, energy: 0, socialHours: 0);
   }
 
+  /// Loads cached metrics and pending sync markers from [SharedPreferences].
   Future<void> loadLocal() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // 1) Cargar métricas si existen
+    // Loads the metrics map if present.
     final raw = prefs.getString(_prefsKey);
     if (raw != null && raw.isNotEmpty) {
       final Map<String, dynamic> decoded = jsonDecode(raw);
@@ -46,7 +60,7 @@ class DailyMetricsStore extends ChangeNotifier {
         );
     }
 
-    // 2) Cargar pending SIEMPRE, haya métricas o no
+    // Loads pending days independently of whether metrics are present.
     final pendingRaw = prefs.getString(_pendingKey);
     if (pendingRaw != null && pendingRaw.isNotEmpty) {
       final List<dynamic> decodedPending = jsonDecode(pendingRaw);
@@ -63,6 +77,11 @@ class DailyMetricsStore extends ChangeNotifier {
     await prefs.setString(_pendingKey, jsonEncode(_pendingDays.toList()));
   }
 
+  /// Updates metrics for [dayKey], persists locally, and writes to Firestore when
+  /// a Firebase user is available.
+  ///
+  /// On Firestore write failure, [dayKey] is added to the pending set so it can
+  /// be retried via [trySyncPending].
   Future<void> setMetrics(String dayKey, DailyMetrics value) async {
     _byDay[dayKey] = value;
 
@@ -99,6 +118,7 @@ class DailyMetricsStore extends ChangeNotifier {
     return map;
   }
 
+  /// Reads metrics for [dayKey] from Firestore and overwrites the local cache.
   Future<void> syncDayFromCloud(String dayKey) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
@@ -131,6 +151,10 @@ class DailyMetricsStore extends ChangeNotifier {
     await prefs.setString(_prefsKey, jsonEncode(map));
   }
 
+  /// Attempts to flush any pending days to Firestore.
+  ///
+  /// The method iterates over a snapshot of pending day keys and, on successful
+  /// write, removes each day from the pending set.
   Future<void> trySyncPending() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
@@ -161,6 +185,7 @@ class DailyMetricsStore extends ChangeNotifier {
     }
   }
 
+  /// Clears local caches (metrics + pending markers) from memory and storage.
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefsKey);

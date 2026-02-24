@@ -9,6 +9,11 @@ import 'package:habit_control/shared/state/daily_metrics_store.dart';
 import 'lateral_menu_header.dart';
 import 'lateral_menu_item.dart';
 
+/// Lateral drawer navigation menu.
+///
+/// Visible actions:
+/// - Navigates to the routes defined in [AppRoutes]
+/// - Signs out via [FirebaseAuth.signOut] and clears local stores on logout
 class LateralMenu extends StatelessWidget {
   const LateralMenu({super.key});
 
@@ -89,6 +94,7 @@ class LateralMenu extends StatelessWidget {
     );
   }
 
+  /// Clears local stores, signs out, and navigates back to [AppRoutes.home].
   Future<void> _logout(BuildContext context) async {
     Navigator.of(context).pop();
 
@@ -101,6 +107,7 @@ class LateralMenu extends StatelessWidget {
     await FirebaseAuth.instance.signOut();
 
     if (!context.mounted) return;
+    // The predicate always returns false, clearing the entire navigation stack.
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, _removeAll);
   }
 }

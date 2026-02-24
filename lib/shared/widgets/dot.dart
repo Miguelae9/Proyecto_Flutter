@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Small circular color indicator.
 class Dot extends StatelessWidget {
   final Color color;
 

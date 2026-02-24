@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Drawer item that navigates to a named route or runs a custom callback.
 class LateralMenuItem extends StatelessWidget {
   static const Color _card = Color(0xFF141A22);
   static const Color _border = Color(0xFF1F2A37);
@@ -100,6 +101,7 @@ extension on LateralMenuItem {
     Navigator.of(context).pop();
 
     if (clearStack) {
+      // Removes all previous routes from the navigator stack.
       Navigator.pushNamedAndRemoveUntil(context, routeName!, _removeAllRoutes);
       return;
     }

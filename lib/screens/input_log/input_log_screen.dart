@@ -9,7 +9,12 @@ import 'package:habit_control/shared/utils/day_key.dart';
 import 'package:habit_control/screens/input_log/models/daily_metrics.dart';
 import 'package:habit_control/screens/input_log/widgets/metric_row.dart';
 
+/// Screen for editing daily metric inputs (sleep, energy, social hours).
+///
+/// Visible data source:
+/// - Reads and writes values via [DailyMetricsStore] using today's `YYYY-MM-DD` key.
 class InputLogScreen extends StatefulWidget {
+  /// Creates the input log screen.
   const InputLogScreen({super.key});
 
   @override
@@ -41,6 +46,8 @@ class _InputLogScreenState extends State<InputLogScreen> {
 
   void _afterFirstFrame(Duration _) async {
     final DailyMetricsStore store = context.read<DailyMetricsStore>();
+
+    // Refreshes local values from Firestore after first render, if available.
     await store.syncDayFromCloud(_todayKey);
 
     final DailyMetrics fresh = store.metricsForDay(_todayKey);

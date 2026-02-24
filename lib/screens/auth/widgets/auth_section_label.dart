@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Small section label used to title authentication fields.
 class AuthSectionLabel extends StatelessWidget {
   final String text;
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Primary call-to-action button used on the authentication screen.
 class AuthPrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dot.dart';
 
+/// Simple "ONLINE" badge used in headers.
 class OnlineBadge extends StatelessWidget {
   final Color textColor;
 

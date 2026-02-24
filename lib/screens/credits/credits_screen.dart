@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 
+/// Static "credits / architecture" screen.
+///
+/// Shows a drawer entry point and a list of technologies as plain text.
 class CreditsScreen extends StatelessWidget {
+  /// Creates the credits screen.
   const CreditsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Menú lateral
       drawer: const Drawer(
         backgroundColor: Color.fromARGB(34, 0, 70, 221),
         child: LateralMenu(),
       ),
 
-      backgroundColor: Theme.of(
-        context,
-      ).scaffoldBackgroundColor, // Fondo usando el tema
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -23,7 +24,6 @@ class CreditsScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Botón para abrir el drawer
                   Builder(
                     builder: (context) {
                       return IconButton(
@@ -40,7 +40,6 @@ class CreditsScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Título
               Text(
                 'SYSTEM\nARCHITECTURE',
                 textAlign: TextAlign.center,
@@ -49,7 +48,6 @@ class CreditsScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              // Información adicional
               Text(
                 'CODE: [Miguel Ángel Pérez García]',
                 textAlign: TextAlign.center,
@@ -70,7 +68,6 @@ class CreditsScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Subtítulo de tecnologías
               Text(
                 'TECHNOLOGIES',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -82,7 +79,6 @@ class CreditsScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Lista de tecnologías
               Text(
                 'FLUTTER (framework)',
                 textAlign: TextAlign.center,

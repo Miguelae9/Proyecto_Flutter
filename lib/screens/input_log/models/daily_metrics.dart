@@ -1,3 +1,4 @@
+/// Immutable value object for daily metric inputs.
 class DailyMetrics {
   final double sleepHours;
   final int energy;
@@ -9,6 +10,7 @@ class DailyMetrics {
     required this.socialHours,
   });
 
+  /// Serializes this instance into a map suitable for JSON/Firestore.
   Map<String, dynamic> toMap() {
     return {
       'sleepHours': sleepHours,
@@ -17,6 +19,7 @@ class DailyMetrics {
     };
   }
 
+  /// Creates an instance from a map, tolerating `int`/`double` numeric variants.
   static DailyMetrics fromMap(Map<String, dynamic>? map) {
     if (map == null) {
       return const DailyMetrics(sleepHours: 0, energy: 0, socialHours: 0);

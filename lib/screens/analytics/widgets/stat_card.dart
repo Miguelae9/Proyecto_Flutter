@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 
+/// Small stat card displaying a label, a value, and an optional up-arrow icon.
 class StatCard extends StatelessWidget {
+  /// Label shown at the top of the card.
   final String title;
+
+  /// Main value shown in large text.
   final String value;
+
+  /// Whether to show an up-arrow icon next to [value].
   final bool showUpArrow;
 
   final Color textMain;
   final Color borderColor;
   final Color bg;
 
+  /// Creates a stat card.
   const StatCard({
     super.key,
     required this.title,

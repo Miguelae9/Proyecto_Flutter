@@ -11,7 +11,14 @@ import 'package:provider/provider.dart';
 import 'package:habit_control/shared/state/habit_day_store.dart';
 import 'package:habit_control/shared/utils/day_key.dart';
 
+/// Dashboard screen displaying today's habit list and completion progress.
+///
+/// Visible data source:
+/// - Per-day completion sets from [HabitDayStore] keyed by `YYYY-MM-DD`.
+///
+/// Uses `percent_indicator` to render progress based on `done / totalHabits`.
 class DashboardScreen extends StatefulWidget {
+  /// Creates the dashboard screen.
   const DashboardScreen({super.key});
 
   @override
@@ -134,7 +141,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 20),
 
                 Center(
-                  // percent_indicator usa 0.0–1.0
+                  // `percent_indicator` expects `percent` in the 0.0..1.0 range.
                   child: CircularPercentIndicator(
                     radius: 105.0,
                     lineWidth: 14.0,

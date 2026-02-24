@@ -6,18 +6,29 @@ import 'package:habit_control/screens/input_log/input_log_screen.dart';
 import 'package:habit_control/screens/splash/splash_screen.dart';
 import 'package:habit_control/screens/auth/home_screen.dart';
 
+/// Named routes and route-to-widget mapping used by the app.
 class AppRoutes {
   AppRoutes._();
 
-  // Nombres de rutas (strings únicos)
+  /// Route name for the splash screen.
   static const splash = '/splash';
+
+  /// Route name for the authentication/home screen.
   static const home = '/home';
+
+  /// Route name for the credits screen.
   static const credits = '/credits';
+
+  /// Route name for the dashboard screen.
   static const dashboard = '/dashboard';
+
+  /// Route name for the input log screen.
   static const inputLog = '/input_log';
+
+  /// Route name for the analytics screen.
   static const analytics = '/analytics';
 
-  // Mapa: nombre de ruta -> pantalla
+  /// Map of route name -> screen builder.
   static final Map<String, WidgetBuilder> map = {
     splash: (context) => const SplashScreen(),
     home: (context) => const LoginScreen(),
@@ -25,5 +36,5 @@ class AppRoutes {
     dashboard: (context) => const DashboardScreen(),
     inputLog: (context) => const InputLogScreen(),
     analytics: (context) => const AnalyticsScreen(),
-};
+  };
 }

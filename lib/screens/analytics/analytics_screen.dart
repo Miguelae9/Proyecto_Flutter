@@ -10,7 +10,13 @@ import 'package:habit_control/shared/utils/day_key.dart';
 
 import 'package:habit_control/shared/services/stoic_quote_service.dart';
 
+/// Analytics screen displaying weekly habit completion and summary stats.
+///
+/// Visible data sources:
+/// - Weekly habit completion from [HabitDayStore]
+/// - A random quote fetched via [StoicQuoteService]
 class AnalyticsScreen extends StatefulWidget {
+  /// Creates the analytics screen.
   const AnalyticsScreen({super.key});
 
   @override
@@ -89,7 +95,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       setState(_applyNextQuote);
     } catch (_) {
       if (!mounted) return;
-      setState(_clearQuote); // Si falla, no se ve nada.
+      // Failure is rendered as an empty quote section (see [_buildQuoteSection]).
+      setState(_clearQuote);
     }
   }
 

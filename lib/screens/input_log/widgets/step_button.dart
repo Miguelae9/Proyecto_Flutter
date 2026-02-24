@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
+/// Outlined square button used for stepping a value up or down.
 class StepButton extends StatelessWidget {
+  /// Whether this is the "+" variant.
   final bool isPlus;
+
+  /// Called when the button is pressed.
   final VoidCallback onTap;
+
+  /// Accent color used for the "+" variant.
   final Color accent;
 
+  /// Creates a step button.
   const StepButton({
     super.key,
     required this.isPlus,

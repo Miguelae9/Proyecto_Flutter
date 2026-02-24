@@ -8,7 +8,12 @@ import 'package:habit_control/shared/state/habit_day_store.dart';
 import 'package:habit_control/shared/widgets/app_logo.dart';
 import 'package:provider/provider.dart';
 
+/// Initial loading screen.
+///
+/// Reads local state from providers and, if a Firebase user is present, triggers
+/// a best-effort sync for pending local changes before navigating forward.
 class SplashScreen extends StatefulWidget {
+  /// Creates the splash screen.
   const SplashScreen({super.key});
 
   @override
@@ -26,11 +31,13 @@ class _SplashScreenState extends State<SplashScreen> {
     final habitStore = context.read<HabitDayStore>();
     final metricsStore = context.read<DailyMetricsStore>();
 
+    // Ensures the splash UI is visible for a minimum amount of time.
     await Future.delayed(const Duration(seconds: 2));
 
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
+      // Attempts to push any locally pending writes to Firestore.
       await habitStore.trySyncPending();
       await metricsStore.trySyncPending();
     }

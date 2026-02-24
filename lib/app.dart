@@ -9,7 +9,12 @@ import 'package:habit_control/shared/state/daily_metrics_store.dart';
 
 import 'dart:async';
 
+/// Root application widget.
+///
+/// Provides app-wide state via [MultiProvider] and configures routing using
+/// [MaterialApp.onGenerateRoute].
 class MyApp extends StatefulWidget {
+  /// Creates the root widget.
   const MyApp({super.key});
 
   @override
@@ -27,6 +32,8 @@ class _MyAppState extends State<MyApp> {
     _habitStore = HabitDayStore()..loadLocal();
     _metricsStore = DailyMetricsStore()..loadLocal();
 
+    // Rebuilds the widget tree when the Firebase Auth user changes so that route
+    // guarding decisions reflect the latest auth state.
     _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuthChanged);
   }
 
@@ -62,6 +69,10 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  /// Route factory used by [MaterialApp.onGenerateRoute].
+  ///
+  /// Applies a basic "protected routes" check based on whether
+  /// [FirebaseAuth.currentUser] is non-null.
   static Route<dynamic> _onGenerateRoute(RouteSettings settings) {
     final String name = settings.name ?? AppRoutes.home;
 
@@ -78,6 +89,7 @@ class _MyAppState extends State<MyApp> {
     return _buildRoute(settings, resolved);
   }
 
+  /// Returns whether [routeName] requires an authenticated user.
   static bool _isProtectedRoute(String routeName) {
     if (routeName == AppRoutes.dashboard) return true;
     if (routeName == AppRoutes.inputLog) return true;
@@ -85,6 +97,7 @@ class _MyAppState extends State<MyApp> {
     return false;
   }
 
+  /// Builds a [MaterialPageRoute] for [routeName], falling back to `home`.
   static Route<dynamic> _buildRoute(RouteSettings settings, String routeName) {
     final builder = AppRoutes.map[routeName];
     if (builder == null) {

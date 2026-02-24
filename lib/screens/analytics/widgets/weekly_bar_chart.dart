@@ -1,6 +1,12 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+/// Weekly bar chart rendered with `fl_chart`.
+///
+/// Visible expectations:
+/// - [data] values are plotted on a 0..1 scale (see `minY`/`maxY`)
+/// - Left axis labels display percentages derived from `value * 100`
+/// - Bars use their list index as the X coordinate and [days] for bottom labels
 class WeeklyBarChart extends StatelessWidget {
   final List<double> data;
   final List<String> days;
@@ -11,6 +17,7 @@ class WeeklyBarChart extends StatelessWidget {
   final Color axisTextColor;
   final Color labelTextColor;
 
+  /// Creates a bar chart widget.
   const WeeklyBarChart({
     super.key,
     required this.data,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'step_button.dart';
 
+/// A labeled row showing a numeric value with minus/plus step controls.
 class MetricRow extends StatelessWidget {
   final String label;
   final String value;
@@ -11,6 +12,7 @@ class MetricRow extends StatelessWidget {
   final Color valueColor;
   final Color accent;
 
+  /// Creates a metric row.
   const MetricRow({
     super.key,
     required this.label,

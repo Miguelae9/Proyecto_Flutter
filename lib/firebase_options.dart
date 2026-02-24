@@ -3,10 +3,15 @@
 
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 
-/// FirebaseOptions solo para Android.
+/// Firebase configuration used by [Firebase.initializeApp].
+///
+/// Needs clarification from author: This file states it is "Android-only", but
+/// no context is provided on how other platforms (iOS/Web) are handled.
 class DefaultFirebaseOptions {
+  /// Returns the options for the current platform.
   static FirebaseOptions get currentPlatform => android;
 
+  /// FirebaseOptions for Android.
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCZpf0eL59zmgzX2-3QUpYnbqd3-EQ0yig',
     appId: '1:835153358774:android:ad3ae8f64eaf4e45f05b17',
