@@ -6,7 +6,6 @@ import 'package:habit_control/shared/widgets/lateral_menu/lateral_menu.dart';
 import 'package:habit_control/screens/dashboard/models/habit.dart';
 import 'package:habit_control/screens/dashboard/widgets/habit_tile.dart';
 import 'package:habit_control/shared/widgets/online_badge.dart';
-import 'package:habit_control/screens/dashboard/widgets/weather_card.dart';
 
 import 'package:provider/provider.dart';
 import 'package:habit_control/shared/state/habit_day_store.dart';
@@ -173,18 +172,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 30),
-
-                WeatherCard(
-                  city: 'MALAGA, ES',
-                  temp: '18°C',
-                  status: 'OPTIMAL',
-                  hum: '45%',
-                  wind: '12km/h',
-                  textMain: textMain,
-                  textMuted: textMuted,
                 ),
 
                 const SizedBox(height: 30),
